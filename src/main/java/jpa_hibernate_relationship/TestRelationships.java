@@ -2,6 +2,8 @@ package jpa_hibernate_relationship;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -17,6 +19,7 @@ import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,28 +29,39 @@ public class TestRelationships {
 	
 	private static EntityManagerFactory emf;
 	private static EntityManager em;
-	private static String[] streets;
-	private static int[] numbers;
-	private static int[] plz;
-	private static List<Address> addresses;
-	private static int[] creditCardNumbers;
+	
+	private static List<Address> addresses;	
 	private static List<CreditCard> creditCards;
-	private static String[] locations;
+
 	private static List<Bank> banks;
-	private static String[] firstNames;
-	private static String[] lastNames;
+	
 	private static List<Customer> customers;
 	private static Long[] ids;
+	
 	@BeforeAll
 	public static void connectDatabase(){
 		emf = Persistence.createEntityManagerFactory("persistenceUnit");
 		em = emf.createEntityManager();
+		
+		setupIds();
+		setupAddresses();
+		setupCreditCards();
+		setupBanks();
+		setupCustomers();
+		
+		setupCreditCardsCustomer();
+		giveAddressesCustomers();
+		setupCustomersOnBanks();
 	}
 	
-	@BeforeEach
+  @BeforeEach
 	public void setUp(){
+		if(em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
+		}
+		//delete leftover problems from the db
 		em.getTransaction().begin();
-		Query deleteBankCust = em.createNativeQuery("DELETE FROM BANK_CUST");
+		Query deleteBankCust = em.createNativeQuery("DELETE FROM VISITS");
 		deleteBankCust.executeUpdate();
 		Query deleteBank = em.createNativeQuery("DELETE FROM BANK");
 		deleteBank.executeUpdate();
@@ -59,15 +73,8 @@ public class TestRelationships {
 		deleteAddress.executeUpdate();
 		em.getTransaction().commit();
 		
-		createIds();
-		createAddresses();
-		createCreditCards();
-		createBanks();
-		createCustomers();
-		setCustomersInCreditCards();
-		setCustomersInAddresses();
-		setCustomersInBanks();
 		
+		//refresh entries
 		em.getTransaction().begin();
 		
 		for(Address a : addresses){
@@ -85,164 +92,234 @@ public class TestRelationships {
 		}
 
 		em.getTransaction().commit();
-	}
-	
-	private void createIds() {
-		ids = new Long[] { 111L, 222L, 333L, 444L, 555L, 666L, 777L, 888L, 999L, 000L };
 		
 	}
-
+	
+  //checking if every Data Object is really in the DB
 	@Test
-	public void checkCorrectUser() {
+	public void checkCorrectData() {
 		em.getTransaction().begin();
-		TypedQuery<Customer> myQuery = em.createQuery("FROM CUSTOMERREL c ORDER by c.id" , Customer.class);
-		List<Customer> result = myQuery.getResultList();
-		assertEquals(customers, result);
+		TypedQuery<Customer> select = em.createQuery(" FROM CUSTOMERREL" , Customer.class);
+		List<Customer> result = select.getResultList();		
+		for(Customer c: customers) {
+		assertTrue(result.contains(c));
+		}
+		TypedQuery<Bank> select2 = em.createQuery("FROM BANK" , Bank.class);		
+		List<Bank> result2 = select2.getResultList();
+		for(Bank b: banks) {
+			assertTrue(result2.contains(b));
+			}
+		
+		TypedQuery<CreditCard> select3 = em.createQuery("FROM CREDITCARD" , CreditCard.class);		
+		List<CreditCard> result3 = select3.getResultList();
+		for(CreditCard c: creditCards) {
+			assertTrue(result3.contains(c));
+			}
+		TypedQuery<Address> select4 = em.createQuery("FROM ADDRESS" , Address.class);		
+		List<Address> result4 = select4.getResultList();
+		for(Address a: addresses) {
+			assertTrue(result4.contains(a));
+			}		
 		em.getTransaction().commit();
 	}
 	
 	@Test
-	public void changeUser(){
+	public void deleteTest() {
 		em.getTransaction().begin();
-		customers.get(1).setFirstName("Peter");
-		em.merge(customers.get(1));
-		
-		Query check = em.createNativeQuery("SELECT firstName from CUSTOMERREL WHERE familyName ='Schreier'");
-		List result = check.getResultList();
-		String name = (String)result.get(0);
-		assertEquals(name, "Peter");
-		
+		em.createQuery(" DELETE FROM CUSTOMERREL WHERE FIRSTNAME = 'JANE'");		
+		em.getTransaction().commit();
+		em.getTransaction().begin();
+		TypedQuery<Customer> all = em.createQuery(" FROM CUSTOMERREL" , Customer.class);
+		Customer jane = customers.get(0);
+		//get sure jane is gone
+		assertTrue(jane.getFirstName().equals("Jane"));
+		assertFalse(all.getResultList().contains(jane));		
 		em.getTransaction().commit();
 	}
 	
 	@Test
-	public void deleteAll(){
-		clear();
+	public void changeUserInformation() {
+		
 		em.getTransaction().begin();
-		Query number = em.createNativeQuery("SELECT Count(*) FROM CUSTOMERREL");
+		TypedQuery<Customer> all = em.createQuery("FROM CUSTOMERREL", Customer.class);
+		List<Customer> custs = all.getResultList();
+		for(Customer c: custs) {
+			c.setLastName("Dörte");
+			em.persist(c);
+		}
+		em.getTransaction().commit();
 		
-		BigDecimal size = (BigDecimal) number.getSingleResult();
-		assertEquals(new BigDecimal(0), size);
 		
+		em.getTransaction().begin();
+		TypedQuery<Customer> all2 = em.createQuery("FROM CUSTOMERREL", Customer.class);
+		List<Customer> custs2 = all2.getResultList();
+		//should be different customers
+		for(Customer c: custs2) {
+			assertFalse(customers.contains(c));
+		}
 		em.getTransaction().commit();
 	}
 	
 	
-	
-	@Test
-	public void workWithRelationships(){
-		Query query = em.createQuery("FROM CUSTOMERREL c order by c.id");
-		List<Customer> list= (List<Customer>)query.getResultList();
-		int i = 0;
-		String[] checkStreets = new String[list.size()];
-		for(Customer customer:list){
-		       checkStreets[i] = customer.getAddress().getStreet();
-		       i++;
-		}
-		assertArrayEquals(streets, checkStreets);
-	}
-
-	private static void setCustomersInBanks() {
-		for(int i = 0; i < customers.size(); i++){
-			banks.get(i).setCustomerList(customers);
-		}
-		
-	}
-
-	private static void setCustomersInAddresses() {
-		for(int i = 0; i < customers.size(); i++){
-			addresses.get(i).setCustomer(customers.get(i));
-		}
-		
-	}
-
-	private static void setCustomersInCreditCards() {
-		for(int i = 0; i < customers.size(); i++){
-			creditCards.get(i).setCustomer(customers.get(i));
-		}
-	}
-
-	private static void createCustomers() {
-		firstNames = new String[] { "Jane", "Ana", "Christian", "Tara", "Paul", "Jana", "Robert", "Mila", "Lana",
-				"Jovan" };
-
-		lastNames = new String[] { "Milbradt", "Kurnikova", "Bild", "Schmidt", "Hietel", "Clarsen", "Katzenberger",
-				"Fonda", "Jovanov", "Angeleski" };
-		
-		customers = new ArrayList<Customer>();
-		
-		for(int i = 0; i < ids.length; i++){
-			Customer newCustomer = new Customer(ids[i], firstNames[i], lastNames[i],
-					new Date(System.currentTimeMillis()), addresses.get(i), 
-					creditCards.get(i), banks);
-			customers.add(newCustomer);
-		}
-		
-	}
-
-	private static void createBanks() {
-		locations = new String[]{"Volksdorf", "Hoisbüttel", "Rahlstedt", "Wandsbek", "Bergstedt","Billstedt", "Reppenstedt", "Rettmer", "Pinneberg", "Mechtersen", "Bardowick"};
-		banks = new ArrayList<Bank>();
-		for(int i = 0; i < locations.length; i++){
-			Bank bank = new Bank(ids[i], locations[i]);
-			banks.add(bank);
-		}
-		
-	}
-
-	private static void createAddresses() {
-		streets = new String[]{"Baumstraße", "Holzstraße", "Eisenstraße", "Goldstraße", "Marmorstraße", "Holstenstrasse", "Stephanstrasse","Baseler PLatz", "Rheinhardstrasse", "Dernauerstrasse"};
-		numbers = new int[]{10,20,30,40,50, 60, 70, 80, 90, 100};
-		plz = new int[]{22949, 22450, 22303, 22405, 22395, 22047, 22095, 31509, 27456, 11111};
-		addresses = new ArrayList<Address>();
-		for(int i = 0; i < streets.length; i++){
-			Address addr = new Address(ids[i], streets[i], numbers[i], plz[i]);
-			addresses.add(addr);
-		}
-		
-	}
-
-	private static void createCreditCards() {
-		creditCardNumbers = new int[]{10,20,30,40,50, 60, 70, 80, 90, 100};
-		creditCards = new ArrayList<CreditCard>();
-		for(int i = 0; i < creditCardNumbers.length; i++){
-			CreditCard card = new CreditCard(ids[i], creditCardNumbers[i]);
-			creditCards.add(card);
-		}
-		
-	}
-	
-	private void clear() {
-		if(customers != null){
-			em.getTransaction().begin();
-			for(Bank b : banks){
-				if(b != null){
-					em.remove(b);
-					}
-			}
-			for(CreditCard c : creditCards){
-				if(c != null){
-					em.remove(c);
-					}
-			}
-			for(Customer c: customers){
-				if(c != null){
-					em.remove(c);
-					}
-			}
-			for(Address a : addresses){
-				em.remove(a);
-			}
-			em.getTransaction().commit();
-		} //else no customers in database
-	}
-	
+	//	@Test
+//	public void changeUser(){
+//		em.getTransaction().begin();
+//		customers.get(1).setFirstName("Peter");
+//		em.merge(customers.get(1));
+//		
+//		Query check = em.createNativeQuery("SELECT firstName from CUSTOMERREL WHERE familyName ='Schreier'");
+//		List result = check.getResultList();
+//		String name = (String)result.get(0);
+//		assertEquals(name, "Peter");
+//		
+//		em.getTransaction().commit();
+//	}
+//	
+//	@Test
+//	public void deleteAll(){
+//		clear();
+//		em.getTransaction().begin();
+//		Query number = em.createNativeQuery("SELECT Count(*) FROM CUSTOMERREL");
+//		
+//		BigDecimal size = (BigDecimal) number.getSingleResult();
+//		assertEquals(new BigDecimal(0), size);
+//		
+//		em.getTransaction().commit();
+//	}
+//	
+//	
+//	
+//	@Test
+//	public void workWithRelationships(){
+//		Query query = em.createQuery("FROM CUSTOMERREL c order by c.id");
+//		List<Customer> list= (List<Customer>)query.getResultList();
+//		int i = 0;
+//		String[] checkStreets = new String[list.size()];
+//		for(Customer customer:list){
+//		       checkStreets[i] = customer.getAddress().getStreet();
+//		       i++;
+//		}
+//		
+//	}
+//
+//	
+//
+//
+//
+//	
+//	private void clear() {
+//		if(customers != null){
+//			em.getTransaction().begin();
+//			for(Bank b : banks){
+//				if(b != null){
+//					em.remove(b);
+//					}
+//			}
+//			for(CreditCard c : creditCards){
+//				if(c != null){
+//					em.remove(c);
+//					}
+//			}
+//			for(Customer c: customers){
+//				if(c != null){
+//					em.remove(c);
+//					}
+//			}
+//			for(Address a : addresses){
+//				em.remove(a);
+//			}
+//			em.getTransaction().commit();
+//		} //else no customers in database
+//	}
+//	
 	@AfterAll
 	public static void shutdown(){
 		em.close();
 		emf.close();
 	}
+	
+	//##################################################################################################################################################
+	//##################################################################################################################################################
+	// here only setups
+	
+	
+	
+	//ids to give as keys
+		private static void setupIds() {
+			ids = new Long[] { 111L, 222L, 333L, 444L, 555L, 666L, 777L, 888L, 999L, 000L };		
+		}
+		
+		
+		//create customers for use in the db
+	     private static void setupCustomers() {
+	    	 customers = new ArrayList<Customer>();
+	    	 String[] names = {"Jane", "Ana", "Christian", "Tara", "Paul", "Jana", "Robert", "Mila", "Lana",
+	 				"Jovan"};
+	    	 String[] surnames = {"Milbradt", "Kurnikova", "Bild", "Schmidt", "Hietel", "Clarsen", "Katzenberger",
+	 				"Fonda", "Jovanov", "Angeleski" };
+	    	 for(int i=0; i<ids.length; i++) {
+	    		 customers.add(new Customer(ids[i],names[i], surnames[i], new Date(System.currentTimeMillis())));
+	    	 }    	 
+		}
+	     
+	     
+	     //create the credit cards for use in the db
+	     private static  void setupCreditCards() {
+	    	Long[] creditCardNumbers = {1050L, 2050L, 3050L, 4050L, 5050L, 6050L, 7050L, 8050L, 9050L,10050L};
+	    	creditCards = new ArrayList<CreditCard>();
+	    	
+	    	for(int i=0; i<creditCardNumbers.length;i++) {
+	    	creditCards.add(new CreditCard(creditCardNumbers[i]));
+	    	}
+	 	}
+	     
+	     
+	   //create the Banks for use in the db
+	     private static  void setupBanks() {
+	    	 banks = new ArrayList<Bank>();
+	 		String[] bankNames= { "HamVoba", "Haspa", "Deutsche Bank", "PSD Bank Kiel", "Targobank", "Sparda", "HypoVereinsbank", "ING-DiBa", "Volksbank Lüneburger Heide", "Commerzbank"};
+	 		for(int i=0; i<ids.length;i++) {
+	 			banks.add(new Bank(ids[i],bankNames[i]));
+	 		}
+	 	}
+	     
+	     
+	     //create the Addresses for use in the db
+	     private static  void setupAddresses() {
+	 		String[] streetNames = {"Straßburgerstraße","Dernauerstraße","Hindenburgstraße","Richterstraße","Wandsbeker Marktstraße","Auerhahnstraße","Krausestraße","Prinzenweg","Berliner Tor", "Hinter dem Tore"};
+	 		
+	 		addresses = new ArrayList<Address>();
+	 		for(int i=0; i<ids.length; i++) {
+	 			addresses.add(new Address(ids[i],streetNames[i],i, 20000+(10*i+2*i)));
+	 		}
+	 		
+	 	}
 
+	   //give each Bank a customer and vice versa
+		private static  void setupCustomersOnBanks() {		
+			for(int i=0; i<ids.length;i++) {
+				banks.get(i).addCustomer(customers.get(ids.length-i-1));
+				customers.get(ids.length-i-1).addBank(banks.get(i));
+			}
+		}
+		
+		//give each Address a customer and vice versa
+		private static  void giveAddressesCustomers() {	
+		for(int i=0; i<ids.length;i++) {
+			customers.get(i).setAddress(addresses.get(ids.length-i-1));
+			addresses.get(ids.length-i-1).addCustomer(customers.get(i));
+		}
+		}
+		
+
+		//give each card a customer and vice versa
+		private static  void setupCreditCardsCustomer() {
+			for(int i=0; i<ids.length;i++) {
+				customers.get(i).addCards(creditCards.get(ids.length-i-1));
+				creditCards.get(ids.length-i-1).setCustomer(customers.get(i));
+			}
+			
+		}
 
 	
 }

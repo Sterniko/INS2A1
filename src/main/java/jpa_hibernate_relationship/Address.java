@@ -1,10 +1,10 @@
 package jpa_hibernate_relationship;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
+import javax.persistence.*;
 @Entity(name="ADDRESS")
 public class Address {
 
@@ -12,28 +12,24 @@ public class Address {
     @Column(nullable = false)
 	private Long addressId;
 
-	@javax.persistence.Basic
+	@Basic
 	private String street;
-	@javax.persistence.Basic
+	@Basic
 	private int nummer;
-	@javax.persistence.Basic
+	@Basic
 	private int zip;
 	
-	@javax.persistence.OneToOne(optional=false,cascade=CascadeType.ALL, 
-		       mappedBy="address",targetEntity=Customer.class, orphanRemoval = true)
-	private Customer customer;
-	
+	@OneToMany(mappedBy="address")	
+	private List<Customer> customers;
 	
 	public Address(Long adressId, String street, int nummer, int zip) {
 		this.addressId = adressId;
 		this.street = street;
 		this.nummer = nummer;
 		this.zip = zip;
-	}
-	
-	public Address(String streets, int numbers, int zip){
-		this(0L,streets, numbers, zip);
-	}
+		customers = new ArrayList<Customer>();
+	}	
+
 
 	public Long getAddressId() {
 		return addressId;
@@ -66,19 +62,20 @@ public class Address {
 	public void setPlz(int zip) {
 		this.zip = zip;
 	}
-
-	public Customer getCustomer() {
-		return customer;
+	
+	
+	public List<Customer> getCustomers() {
+		return customers;
 	}
 
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
+public void addCustomer(Customer c) {
+	customers.add(c);
+}
 
 	@Override
 	public String toString() {
 		return "Address [addressId=" + addressId + ", street=" + street + ", nummer=" + nummer + ", plz=" + zip
-				+ ", customer=" + customer + "]";
+				+ "]";
 	}
 	
 

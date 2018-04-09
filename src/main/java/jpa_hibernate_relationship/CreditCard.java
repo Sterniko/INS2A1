@@ -1,51 +1,35 @@
 package jpa_hibernate_relationship;
 
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 @Entity(name = "CREDITCARD")
 public class CreditCard {
-	@javax.persistence.Id
-	@javax.persistence.Column(nullable = false)
-	private long creditCardId;
-
-	@Basic
-	private long cardNumber;
-
-	// orphaned(deleted) entities should be removed
-	@OneToOne(optional = false, orphanRemoval = true)
-	@JoinColumn(name = "CUSTOMER_ID", unique = true, nullable = false, updatable = false)
+	
+	@Id
+	@Column(name="CARDID", nullable = false)
+	private long creditCardNumber;
+	
+	//user of the card
+	@ManyToOne
+	@JoinColumn(name="CUSTOMID", nullable=false)
 	private Customer customer;
-
-	public CreditCard(long cid, long cnumber) {
-		this.cardNumber = cnumber;
-		this.creditCardId = cid;
-	}
-
-	public CreditCard() {
-
-	}
-
-	public CreditCard(int i) {
-		// TODO Auto-generated constructor stub
-	}
-
-	public long getCreditCardId() {
-		return creditCardId;
-	}
-
-	public void setCreditCardId(long creditCardId) {
-		this.creditCardId = creditCardId;
+	
+	public CreditCard(long cid) {
+		this.creditCardNumber = cid;
 	}
 
 	public long getCardNumber() {
-		return cardNumber;
+		return creditCardNumber;
 	}
 
-	public void setCardNumber(int cardNumber) {
-		this.cardNumber = cardNumber;
+	public void setCardNumber(long cardNumber) {
+		this.creditCardNumber = cardNumber;
 	}
 
 	public Customer getCustomer() {
@@ -58,8 +42,7 @@ public class CreditCard {
 
 	@Override
 	public String toString() {
-		return "CreditCard [creditCardId=" + creditCardId + ", cardNumber=" + cardNumber + ", customer=" + customer
-				+ "]";
+		return "CreditCard [creditCardId=" + creditCardNumber + "]";
 	}
 
 }

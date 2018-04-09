@@ -1,53 +1,75 @@
 package jpa_hibernate_relationship;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 
 
+
+@NamedQuery(
+		name="findCustomersByName",
+		query="FROM CUSTOMERREL c WHERE c.firstName LIKE :custName"
+		) 
 @Entity(name="CUSTOMERREL")
-
 public class Customer {
 	
 	@Id
-	//@Column(name="ID")
+	@Column(name="CUSTOMID")
 	private Long customerId;
 	@Basic
-	//@Column(name="FIRSTNAME")
+	@Column(name="FIRSTNAME")
 	private String firstName;
 	@Basic
-	//@Column(name="LASTNAME")
+	@Column(name="SURNAME")
 	private String lastName;
 	@Basic
-	//@Column(name="ENTRYDATE")
+	@Column(name="ENTRYDATE")
 	private Date entryDate;
-	
-	@javax.persistence.OneToOne(optional=false, orphanRemoval = true)
-    @javax.persistence.JoinColumn(name = "ADDRESS_ID", unique = true, nullable = false, updatable = false )
+
+	// address-ID
+	@ManyToOne
+	@JoinColumn(name="ADDRESSID", nullable=false)
 	private Address address;
+
 	
-	@javax.persistence.OneToOne(optional=false,cascade=CascadeType.ALL, 
-		       mappedBy="customer",targetEntity=CreditCard.class, orphanRemoval = true)
-	private CreditCard creditCard;
+	// banks the customer visits
+	@ManyToMany
+	@JoinTable(name="VISITS",
+	joinColumns=@JoinColumn(name="CUSTOMID",
+	referencedColumnName="CUSTOMID"),
+	inverseJoinColumns=@JoinColumn(name="BANKID",
+	referencedColumnName="BANKID")
+	)
+	private List<Bank> banks;
 	
-	@ManyToMany(mappedBy="customerList")
-	private List<Bank> bankList;
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="customer")
+	private List<CreditCard> cards;
 	
-	public Customer (Long customerId, String firstName, String lastName, Date entryDate, Address address, CreditCard creditCard, List<Bank> bankList) {
+	public Customer (Long customerId, String firstName, String lastName, Date entryDate, Address address) {
 		this.customerId = customerId;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.entryDate = entryDate;
 		this.address = address;
-		this.creditCard = creditCard;
-		this.bankList = bankList;
+		this.banks = new ArrayList<Bank>();
+		this.cards = new ArrayList<CreditCard>();
 	}//constructor()
-
+	
+	public Customer (Long customerId, String firstName, String lastName, Date entryDate ) {
+		this(customerId, firstName, lastName, entryDate, null);
+	}//constructor()
 
 	
 	public Long getcustomerId() {
@@ -81,7 +103,8 @@ public class Customer {
 	public void setEntryDate(Date entryDate) {
 		this.entryDate = entryDate;
 	}
-
+	
+	
 	public Address getAddress() {
 		return address;
 	}
@@ -90,27 +113,27 @@ public class Customer {
 		this.address = address;
 	}
 
-	public CreditCard getCreditCard() {
-		return creditCard;
+	public List<Bank> getBanks() {
+		return banks;
 	}
 
-	public void setCreditCard(CreditCard creditCard) {
-		this.creditCard = creditCard;
+	public void addBank(Bank bank) {
+		this.banks.add(bank);
 	}
 
-	public List<Bank> getBankList() {
-		return bankList;
+	public List<CreditCard> getCards(){
+		return cards;
+	}
+	
+	public void addCards(CreditCard c) {
+		cards.add(c);
 	}
 
-	public void setBankList(List<Bank> bankList) {
-		this.bankList = bankList;
-	}
 
 	@Override
 	public String toString() {
 		return "Customer [customerId=" + customerId + ", firstName=" + firstName + ", lastName=" + lastName
-				+ ", entryDate=" + entryDate + ", address=" + address + ", creditCard=" + creditCard + ", bankList="
-				+ bankList + "]";
+				+ ", entryDate=" + entryDate + ", address=" + address + "]";
 	}
 	
 

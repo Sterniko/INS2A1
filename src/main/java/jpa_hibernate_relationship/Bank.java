@@ -1,5 +1,6 @@
 package jpa_hibernate_relationship;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -7,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 
 
 @Entity(name="BANK")
@@ -17,22 +19,27 @@ public class Bank {
 	private Long bankId;
 	
 	@Basic
-	private String location;
+	@Column(name="NAME", nullable = false)
+	private String bankName;
 	
-	@javax.persistence.ManyToMany
-	@javax.persistence.JoinTable(name ="BANK_CUST",
-				joinColumns=
-				@JoinColumn(name="BANKID",
-							referencedColumnName="bankId"),
-				inverseJoinColumns=
-				@JoinColumn(name="CUSTID",
-							referencedColumnName="customerId")
-				)
+//	@javax.persistence.ManyToMany
+//	@javax.persistence.JoinTable(name ="BANK_CUST",
+//				joinColumns=
+//				@JoinColumn(name="BANKID",
+//							referencedColumnName="bankId"),
+//				inverseJoinColumns=
+//				@JoinColumn(name="CUSTID",
+//							referencedColumnName="customerId")
+//				)
+	
+	//visitors of the bank
+	@ManyToMany(mappedBy="banks")
 	private List<Customer> customerList;
 	
-	public Bank(long id, String location) {
+	public Bank(long id, String bankName) {
 		this.bankId =id;
-		this.location = location;
+		this.bankName = bankName;
+		customerList = new ArrayList<Customer>();
 	}
 	
 	public Bank(){
@@ -51,12 +58,12 @@ public class Bank {
 		this.bankId = bankId;
 	}
 
-	public String getLocation() {
-		return location;
+	public String getBankName() {
+		return bankName;
 	}
 
-	public void setLocation(String location) {
-		this.location = location;
+	public void setLocation(String bankName) {
+		this.bankName = bankName;
 	}
 
 	public List<Customer> getCustomerList() {
@@ -69,7 +76,7 @@ public class Bank {
 
 	@Override
 	public String toString() {
-		return "Bank [bankId=" + bankId + ", location=" + location + ", customerList=" + customerList + "]";
+		return "Bank [bankId=" + bankId + ", bankName=" + bankName + ", customerList=" + customerList + "]";
 	}
 
 
