@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd" version="2.1">
+
+ <!--   <sequence-generator name="CUSTOMERGEN"
+        allocation-size="1"
+        sequence-name="CUSTOMER_SEQ"
+        initial-value="1" />
+  -->      
+  
+	 <entity class ="jpa_hibernate_xml.Customer" name="CUSTOMER">
+	    <table name="CUSTOMER" />
+	    <attributes>
+	        <id name="id">
+	            <column name= "ID" /> 
+	        </id>
+	        <basic name="firstName" >
+	            <column name="FIRSTNAME" length="50"/>
+	        </basic>
+	        <basic name="lastName" >
+	            <column name="LASTNAME" length="50"/>
+	        </basic>
+	        <basic name="entryDate" >
+	            <column name="ENTRYDATE" />
+	        </basic>
+	    </attributes>
+	 </entity>
+ </entity-mappings>

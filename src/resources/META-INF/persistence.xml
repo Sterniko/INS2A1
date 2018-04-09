@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0"
+	xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+                        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+		
+	<persistence-unit name="persistenceUnit" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+			<mapping-file>META-INF/orm.xml</mapping-file> 
+		
+    <properties>
+	<property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver" />
+	<property name="hibernate.connection.url"
+		value="jdbc:oracle:thin:@ora14.informatik.haw-hamburg.de:1521:inf14" />
+	<property name="hibernate.connection.username" value="ace516" />
+	<property name="hibernate.connection.password" value="Nov4ever!" />
+	<property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />
+	<property name="hibernate.default_schema" value="" />
+	<property name="hibernate.show_sql" value="true" />
+	<property name="hibernate.format_sql" value="true" />
+	<property name="hibernate.jdbc.use_get_generated_keys" value="true" />
+	<property name="hibernate.c3p0.min_size" value="10" />
+	
+		</properties>
+  </persistence-unit>
+</persistence>
