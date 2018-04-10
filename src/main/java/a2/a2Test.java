@@ -2,7 +2,7 @@ package a2;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Date;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class a2Test {
 private DBC con = new DBC(false);
+
 @Test
 	void connectionTest() {
 		
@@ -29,7 +30,7 @@ private DBC con = new DBC(false);
 	}
 	@Test
 	void testCreateTable() {
-		String order = "CREATE TABLE CUSTOMERS(Id INT Not NULL, FirstName VARCHAR(50) Not NULL , LastName VARCHAR(100) Not NULL, EntryYear TIMESTAMP )";
+		String order = "CREATE TABLE CUSTOMERS(Id INT Not NULL, FirstName VARCHAR(50) Not NULL , LastName VARCHAR(100) Not NULL, EntryDate DATE )";
 		try {
 		Statement statement = con.getDBConnection().createStatement();
 		statement.executeUpdate(order);	
@@ -40,7 +41,7 @@ private DBC con = new DBC(false);
 	}
 	@Test
 	void testAddToTable() {
-		java.sql.Timestamp date = new java.sql.Timestamp(java.time.Instant.now().getEpochSecond()*1000);
+		Date date = new Date(System.currentTimeMillis());
 
 		String c1 ="1, 'Frank', 'Friedrich'";
 		String c2 ="2, 'Holger', 'Miller'";
@@ -55,10 +56,9 @@ private DBC con = new DBC(false);
 		
 		String[] customers = {c1,c2,c3,c4,c5,c6,c7,c8,c9,c10};
 		try {
-		for(String s: customers) {
-			String better = date.toString().replaceAll("-", ".");
-			String sDate = s+", "+ "'"+ better+"'";
-			String order = "INSERT INTO CUSTOMERS VALUES(" +sDate+")";
+		for(String s: customers) {		
+			String sDate = s+", "+ "'"+date+"'";
+			String order = "INSERT INTO CUSTOMERS VALUES("+sDate+")";
 			System.out.println(order);
 			Statement statement = con.getDBConnection().createStatement();
 			statement.executeUpdate(order);
@@ -74,7 +74,7 @@ private DBC con = new DBC(false);
 	
 	void ReadFromTable() {
 		try {
-			String order = "SELECT EntryYear FROM CUSTOMERS";
+			String order = "SELECT DATE FROM CUSTOMERS";
 			Statement statement = con.getDBConnection().createStatement();
 			ResultSet rs = statement.executeQuery(order);
 			statement.close();
