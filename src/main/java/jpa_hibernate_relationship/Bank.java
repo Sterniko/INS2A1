@@ -8,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
 
@@ -22,18 +23,8 @@ public class Bank {
 	@Column(name="NAME", nullable = false)
 	private String bankName;
 	
-//	@javax.persistence.ManyToMany
-//	@javax.persistence.JoinTable(name ="BANK_CUST",
-//				joinColumns=
-//				@JoinColumn(name="BANKID",
-//							referencedColumnName="bankId"),
-//				inverseJoinColumns=
-//				@JoinColumn(name="CUSTID",
-//							referencedColumnName="customerId")
-//				)
-	
-	//visitors of the bank
 	@ManyToMany(mappedBy="banks")
+	//visitors of the bank	
 	private List<Customer> customerList;
 	
 	public Bank(long id, String bankName) {

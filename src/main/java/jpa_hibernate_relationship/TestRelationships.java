@@ -54,7 +54,8 @@ public class TestRelationships {
 		setupCustomersOnBanks();
 	}
 	
-  @BeforeEach
+    @BeforeEach
+//	@Test
 	public void setUp(){
 		if(em.getTransaction().isActive()) {
 			em.getTransaction().rollback();
@@ -96,7 +97,7 @@ public class TestRelationships {
 	}
 	
   //checking if every Data Object is really in the DB
-	@Test
+//	@Test
 	public void checkCorrectData() {
 		em.getTransaction().begin();
 		TypedQuery<Customer> select = em.createQuery(" FROM CUSTOMERREL" , Customer.class);
@@ -123,7 +124,7 @@ public class TestRelationships {
 		em.getTransaction().commit();
 	}
 	
-	@Test
+//	@Test
 	public void deleteTest() {
 		em.getTransaction().begin();
 		em.createQuery(" DELETE FROM CUSTOMERREL WHERE FIRSTNAME = 'JANE'");		
@@ -137,9 +138,8 @@ public class TestRelationships {
 		em.getTransaction().commit();
 	}
 	
-	@Test
-	public void changeUserInformation() {
-		
+//	@Test
+	public void changeUserInformation() {		
 		em.getTransaction().begin();
 		TypedQuery<Customer> all = em.createQuery("FROM CUSTOMERREL", Customer.class);
 		List<Customer> custs = all.getResultList();
@@ -161,78 +161,34 @@ public class TestRelationships {
 	}
 	
 	
-	//	@Test
-//	public void changeUser(){
-//		em.getTransaction().begin();
-//		customers.get(1).setFirstName("Peter");
-//		em.merge(customers.get(1));
-//		
-//		Query check = em.createNativeQuery("SELECT firstName from CUSTOMERREL WHERE familyName ='Schreier'");
-//		List result = check.getResultList();
-//		String name = (String)result.get(0);
-//		assertEquals(name, "Peter");
-//		
-//		em.getTransaction().commit();
-//	}
-//	
-//	@Test
-//	public void deleteAll(){
-//		clear();
-//		em.getTransaction().begin();
-//		Query number = em.createNativeQuery("SELECT Count(*) FROM CUSTOMERREL");
-//		
-//		BigDecimal size = (BigDecimal) number.getSingleResult();
-//		assertEquals(new BigDecimal(0), size);
-//		
-//		em.getTransaction().commit();
-//	}
-//	
-//	
-//	
-//	@Test
-//	public void workWithRelationships(){
-//		Query query = em.createQuery("FROM CUSTOMERREL c order by c.id");
-//		List<Customer> list= (List<Customer>)query.getResultList();
-//		int i = 0;
-//		String[] checkStreets = new String[list.size()];
-//		for(Customer customer:list){
-//		       checkStreets[i] = customer.getAddress().getStreet();
-//		       i++;
-//		}
-//		
-//	}
-//
-//	
-//
-//
-//
-//	
-//	private void clear() {
-//		if(customers != null){
-//			em.getTransaction().begin();
-//			for(Bank b : banks){
-//				if(b != null){
-//					em.remove(b);
-//					}
-//			}
-//			for(CreditCard c : creditCards){
-//				if(c != null){
-//					em.remove(c);
-//					}
-//			}
-//			for(Customer c: customers){
-//				if(c != null){
-//					em.remove(c);
-//					}
-//			}
-//			for(Address a : addresses){
-//				em.remove(a);
-//			}
-//			em.getTransaction().commit();
-//		} //else no customers in database
-//	}
-//	
-	@AfterAll
+	
+	@Test
+	public void getFromCustoToBank() {
+		System.out.println("################################################################################");
+		System.out.println("0");	
+		em.getTransaction().begin();
+		System.out.println("1");
+		String q =" SELECT BANKID, NAME" + 
+				"  FROM BANK" + 
+				" LEFT OUTER JOIN VISITS" + 
+				"  ON BANK.BANKID = VISITS.BANKID" + 
+				" LEFT OUTER JOIN CUSTOMERREL" + 
+				"  ON VISITS.CUSTOMID = 666";
+//		TypedQuery<Bank> bankes= 
+		em.createQuery(q, Bank.class);
+//		for(Bank b :bankes.getResultList()) {
+//			System.out.println(b);
+//			assertTrue(customers.get(5).getBanks().contains(b));
+//		} 
+		
+//		@SuppressWarnings("unchecked")
+//		List<Bank> l = bankes.getResultList();	
+//				
+				em.getTransaction().commit();
+	}
+	
+
+//	@AfterAll
 	public static void shutdown(){
 		em.close();
 		emf.close();

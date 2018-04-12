@@ -11,6 +11,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.LockModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,7 @@ public class TestCustomerLocking {
 			}
 			em.getTransaction().begin();
 		    System.out.println("I DELETE ");
-			Query delete = em.createNativeQuery("DELETE FROM CUSTOMER");
+			Query delete = em.createNativeQuery("DELETE FROM CUSTOMLOCK");
 			delete.executeUpdate();
 			em.getTransaction().commit();
 			em.getTransaction().begin();
@@ -63,48 +64,24 @@ public class TestCustomerLocking {
 
 		}
 	 
+	 
 	 @Test
-	 public void changeNOLock() {
-	try {	 
-		 Customer jane;
-		 Customer bruno;
-		 em.getTransaction().begin();
-		 DBaccessor a1= new DBaccessor();
-		 DBaccessor a2= new DBaccessor();
-		 jane = em.find(Customer.class, 111L);
-	     a1.changeCstmrName(jane, "Bruno1");
-	     bruno = em.find(Customer.class, 111L);
-	     a2.changeCstmrName(bruno, "bruno2");
-	  a2.doAction();
-	a1.doAction();
-		 em.getTransaction().commit();
-		 fail("no exception thrown");
-	}catch(javax.persistence.OptimisticLockException win) {
-		assertTrue(true);
-	}
+	  public void noLockResultsProblem() {
+		DBaccessor a = new DBaccessor();
+		DBaccessor b = new DBaccessor();
+		Customer cus = null;
+		TypedQuery<Customer> tpq = em.createQuery("FROM CUSTOMLOCK WHERE FIRSTNAME = 'Janelocking'", Customer.class);
+		for(Customer c: tpq.getResultList())cus=c;
+		a.changeCstmrName(cus, "Dieter");
+		b.changeCstmrName(cus, "Wolfgang");
+		 a.start();
+		 b.start();
 	 }
-		@Test
-	public void changeLock() {
-		try {
-			Customer jane;
-			Customer bruno;
-			em.getTransaction().begin();
-			DBaccessor a1 = new DBaccessor();
-			DBaccessor a2 = new DBaccessor();
-			jane = em.find(Customer.class, 111L);
-			em.lock(jane, LockModeType.OPTIMISTIC);
-			a1.changeCstmrName(jane, "Bruno1");
-
-			bruno = em.find(Customer.class, 111L);
-			a2.changeCstmrName(bruno, "bruno2");
-			a2.doAction();
-			jane = em.find(Customer.class, 111L);
-			a1.changeCstmrName(jane, "Bruno1");
-			a1.doAction();
-			em.getTransaction().commit();
-		} catch (IllegalStateException e) {
-			assertTrue(e.toString().equals("Transaction alreadz active"));
-			em.getTransaction().commit();
-		}
-	}
+	 
+//	 @Test
+	 public void lockResolvesProblem() {
+		 
+	 }
+	
+	 
 }

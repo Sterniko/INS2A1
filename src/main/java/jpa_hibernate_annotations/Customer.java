@@ -3,6 +3,7 @@ package jpa_hibernate_annotations;
 import java.sql.Date;
 
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -11,16 +12,16 @@ import javax.persistence.Id;
 public class Customer {
 	
 	@Id
-	//@Column(name="ID")
+	@Column(name="CID", nullable = false)
 	private Long id;
 	@Basic
-	//@Column(name="FIRSTNAME")
+	@Column(name="FIRSTNAME")
 	private String firstName;
 	@Basic
-	//@Column(name="LASTNAME")
+	@Column(name="LASTNAME")
 	private String lastName;
 	@Basic
-	//@Column(name="ENTRYDATE")
+	@Column(name="ENTRYDATE")
 	private Date entryDate;
 	
 	

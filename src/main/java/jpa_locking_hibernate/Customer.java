@@ -13,11 +13,11 @@ import org.hibernate.annotations.Columns;
 
 
 
-@Entity
+@Entity(name="CUSTOMLOCK")
 public class Customer {
 	
 	@Id
-	@Column(name="ID")
+	@Column(name="CID")
 	private Long id;
 	@Basic
 	@Column(name="FIRSTNAME")
@@ -30,7 +30,7 @@ public class Customer {
 	private Date entryDate;
 	
 	@Version 
-	@Column(name = "optlock")
+	@Column(name = "OPTLOCK")
 	private Long optlock = 0L;
 	
 	public Customer (Long id, String firstName, String lastName, Date entryDate ) {

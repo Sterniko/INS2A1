@@ -2,24 +2,21 @@ package jpa_hibernate_xml;
 
 import java.sql.Date;
 
+import javax.persistence.Id;
+
 
 
  
 public class Customer {
 	
-	private Long id;
-	@Override
-	public String toString() {
-		return "Customer [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", entryDate=" + entryDate
-				+ "]";
-	}
-
+	@Id
+	private Long cid;
 	private String firstName;
 	private String lastName;
 	private Date entryDate;
 	
 	public Customer (Long id, String firstName, String lastName, Date entryDate ) {
-		this.id = id;
+		this.cid = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.entryDate = entryDate;
@@ -29,12 +26,12 @@ public class Customer {
 	
 	}
 	
-	public Long getId() {
-		return id;
+	public Long getCId() {
+		return cid;
 	}
 
 	public void setId(Long id) {
-		this.id = id;
+		this.cid = id;
 	}
 
 	public String getFirstName() {
@@ -59,6 +56,11 @@ public class Customer {
 
 	public void setEntryDate(Date entryDate) {
 		this.entryDate = entryDate;
+	}
+	@Override
+	public String toString() {
+		return "Customer [id=" + cid + ", firstName=" + firstName + ", lastName=" + lastName + ", entryDate=" + entryDate
+				+ "]";
 	}
 
 }

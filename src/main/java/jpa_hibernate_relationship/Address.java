@@ -2,7 +2,7 @@ package jpa_hibernate_relationship;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 
 import javax.persistence.*;
 @Entity(name="ADDRESS")

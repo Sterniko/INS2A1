@@ -20,7 +20,7 @@ public class Annotations {
 		// start the transaction
 		em.getTransaction().begin();
 
-		Customer customer = new Customer(765L, "Amm", "Haha", new Date(System.currentTimeMillis()));
+		Customer customer = new Customer(765L, "Ann", "Harn", new Date(System.currentTimeMillis()));
 
 		// call the EntityManager and it can store the student
 		em.persist(customer);

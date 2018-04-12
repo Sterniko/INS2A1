@@ -170,7 +170,7 @@ public class TestCustomer {
 	     assertFalse(rs.isEmpty());
 	
 	//cardinality of Customers in DB
-		Query number = em.createNativeQuery("SELECT Count(ID) FROM CUSTOMER");
+		Query number = em.createNativeQuery("SELECT Count(CID) FROM CUSTOMER");
 		
 		BigDecimal size = (BigDecimal) number.getSingleResult();
 		

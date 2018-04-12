@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -84,8 +85,7 @@ for(int i = 0; i<10;i++) {
 	 assertTrue(em != null);
 	 assertTrue(customers != null);
 	 em.getTransaction().begin();
-	Query select = em.createNativeQuery("SELECT * FROM CUSTOMER", Customer.class);
-	 @SuppressWarnings("unchecked")
+	 TypedQuery<Customer> select = em.createQuery(" FROM CUSTOMER", Customer.class);	
 	 List<Customer> result = select.getResultList();	 
 	 for(Customer c: result) {
 		 System.out.println((c));
@@ -112,12 +112,12 @@ for(int i = 0; i<10;i++) {
 	 System.out.println(jane);
 	 assertTrue(jane != null);
 	 em.detach(jane);
-	 jane.setFirstName("SchmutzigerHarrald");
+	 jane.setFirstName("Harrald");
 	  em.merge(jane);
 	  em.getTransaction().commit();
 	  jane =em.find(Customer.class, 111L );
 		 System.out.println(jane);
-	  assertTrue(jane.getFirstName().equals("SchmutzigerHarrald"));
+	  assertTrue(jane.getFirstName().equals("Harrald"));
 	  System.out.println("########################################################");
 		System.out.println(" CHANGE END");
 	 }
@@ -128,9 +128,8 @@ for(int i = 0; i<10;i++) {
 		System.out.println("DOING DELETETEST");
 		em.getTransaction().begin();
 		
-		Query select = em.createNativeQuery("SELECT * FROM CUSTOMER", Customer.class);
-		
-		 @SuppressWarnings("unchecked")
+		TypedQuery<Customer> select = em.createQuery(" FROM CUSTOMER", Customer.class);
+
 		 List<Customer> result = select.getResultList();	
 		 
 	
@@ -141,15 +140,14 @@ for(int i = 0; i<10;i++) {
 			 assertTrue(result.contains(c));
 			 }
 		
-		Query myQuery = em.createNativeQuery("DELETE FROM CUSTOMER WHERE FIRSTNAME='Paulanno'");
-		myQuery.executeUpdate();
-		// should still have SOMETHING in the DB
-		 @SuppressWarnings("unchecked")
+	    Query res = em.createQuery("DELETE FROM CUSTOMER WHERE FIRSTNAME='Paulanno'");
+		res.executeUpdate();
+		
 		 List<Customer> rs = select.getResultList();	
 	     assertFalse(rs.isEmpty());
 	
 	//cardinality of Customers in DB
-		Query number = em.createNativeQuery("SELECT Count(ID) FROM CUSTOMER");
+		Query number = em.createNativeQuery("SELECT Count(CID) FROM CUSTOMER");
 		
 		BigDecimal size = (BigDecimal) number.getSingleResult();
 		

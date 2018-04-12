@@ -1,3 +1,5 @@
-/jpa_hibernate_relationship/
 /META-INF/
-/a2/
+/jpa_hibernate_annotations/
+/jpa_hibernate_xml/
+/jpa_hibernate_relationship/
+/jpa_locking_hibernate/

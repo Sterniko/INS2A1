@@ -8,7 +8,7 @@ import javax.persistence.Persistence;
 
 
 
-public class DBaccessor {
+public class DBaccessor extends Thread {
 	private  EntityManagerFactory emf;
 	private  EntityManager em;
 	private Customer myC;
@@ -19,14 +19,18 @@ public class DBaccessor {
 		myC = null;
 	}
 
-	public void doAction() {
-		em.getTransaction().begin();
-		em.merge(myC);
-		em.getTransaction().commit();
-	}
+	
 
 	public void changeCstmrName(Customer c, String newname) {
 		c.setFirstName(newname);
 		myC = c;
+		em.getTransaction().begin();
+	}
+
+	@Override
+	public void run() {
+		
+		em.persist(myC);
+		em.getTransaction().commit();
 	}
 }
